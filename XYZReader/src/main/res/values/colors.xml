@@ -22,4 +22,12 @@
     <color name="theme_primary_dark">#04561A</color>
     <color name="theme_accent">#04561A</color>
     <color name="ltgray">#ffe0e0e0</color>
+    <color name="black">#212121</color>
+
+
+    <color name="blue_1">#416D95</color>
+    <color name="blue_2">#5F7B95</color>
+    <color name="blue_3">#273949</color>
+    <color name="beige_1">#956F32</color>
+    <color name="beige_2">#493C27</color>
 </resources>

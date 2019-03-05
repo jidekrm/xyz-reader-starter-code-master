@@ -18,11 +18,27 @@
 <resources>
 
     <style name="Theme.Bacon" parent="@style/Theme.AppCompat.Light.NoActionBar">
+        <item name="colorPrimary">@color/blue_1</item>
+        <item name="android:icon">@color/blue_2</item>
+        <item name="colorPrimaryDark">@color/blue_3</item>
+        <item name="colorAccent">@color/beige_1</item>
+        <item name="dividerVertical">@color/beige_2</item>
 
     </style>
 
     <style name="Theme.Bacon.Detail">
         <item name="android:statusBarColor">@android:color/transparent</item>
+
+
     </style>
+
+    <style name="MyFreeStyle" parent="@style/Theme.AppCompat.Light.NoActionBar">
+        <item name="colorPrimary">@color/blue_1</item>
+        <item name="android:icon">@color/blue_2</item>
+        <item name="colorPrimaryDark">@color/blue_3</item>
+        <item name="colorAccent">@color/beige_1</item>
+        <item name="dividerVertical">@color/beige_2</item>
+    </style>
+
 
 </resources>
