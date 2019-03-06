@@ -35,6 +35,7 @@
             android:paddingTop="8dp"
             android:paddingRight="16dp"
             android:paddingBottom="4dp"
+            tools:text="hellooo There"
             android:textColor="@color/ltgray" />
 
         <TextView
@@ -44,9 +45,10 @@
             android:layout_height="wrap_content"
             android:ellipsize="end"
             android:maxLines="2"
+            tools:text="hellooo There"
             android:paddingLeft="16dp"
             android:paddingRight="16dp"
-            android:paddingBottom="16dp"
+            android:paddingBottom="4dp"
             android:textSize="12sp"
             android:textColor="#6000" />
     </LinearLayout>

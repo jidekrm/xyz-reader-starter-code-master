@@ -57,7 +57,7 @@ public class ArticleListActivity extends AppCompatActivity implements
         setContentView(R.layout.activity_article_list);
 
 //        mToolbar = (Toolbar) findViewById(R.id.toolbar);
-        ((CollapsingToolbarLayout) findViewById(R.id.collapsing_toolbar_layout)).setTitle("Eclairs");
+//        ((CollapsingToolbarLayout) findViewById(R.id.collapsing_toolbar_layout)).setTitle("XYZ Reader");
 //Removed
 //        final View toolbarContainerView = findViewById(R.id.toolbar_container);
 
