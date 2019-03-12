@@ -74,24 +74,11 @@ public class ArticleDetailFragment extends Fragment implements
 
     private static final String ARG_ALBUM_IMAGE_POSITION = "arg_album_image_position";
     private static final String ARG_STARTING_ALBUM_IMAGE_POSITION = "arg_starting_album_image_position";
-//    private long mBackgroundImageFadeMillis;
-
-//    private final Callback mImageCallback = new Callback() {
-//        @Override
-//        public void onSuccess() {
-//            startPostponedEnterTransition();
-//        }
-//
-//        @Override
-//        public void onError() {
-//            startPostponedEnterTransition();
-//        }
-//    };
 
 
     public void startPostponedEnterTransition() {
-        Log.i("KKKKC", "" + mAlbumPosition);
-        Log.i("KKKKC2", "" + mStartingPosition);
+        Log.i("KKKmAlbumPosition", "" + mAlbumPosition);
+        Log.i("KKKmStartingPosition", "" + mStartingPosition);
         if (mAlbumPosition == mStartingPosition) {
             mPhotoView.getViewTreeObserver().addOnPreDrawListener(new ViewTreeObserver.OnPreDrawListener() {
                 @Override
@@ -203,6 +190,7 @@ public class ArticleDetailFragment extends Fragment implements
 
 //        Log.i("KKK2", ArticleDetailActivity.getMama());
         String albumName = ArticleDetailActivity.getMama();
+        Log.i("ABCDhh3", "" + albumName);
 
         mStatusBarColorDrawable = new ColorDrawable(0);
 
@@ -218,18 +206,7 @@ public class ArticleDetailFragment extends Fragment implements
 
 
         mPhotoView.setTransitionName(albumName);
-//        if (mIsTransitioning) {
-////            albumImageRequest.noFade();
-////            backgroundImageRequest.noFade();
-////            backgroundImage.setAlpha(0f);
-//            getActivity().getWindow().getSharedElementEnterTransition().addListener(new TransitionListenerAdapter() {
-//                @Override
-//                public void onTransitionEnd(Transition transition) {
-//                    backgroundImage.animate().setDuration(mBackgroundImageFadeMillis).alpha(1f);
-//                }
-//            });
-//        }
-
+        Log.i("KKKXXX", "" + albumName);
 
         bindViews();
         updateStatusBar();
@@ -327,7 +304,6 @@ public class ArticleDetailFragment extends Fragment implements
 
                         @Override
                         public void onErrorResponse(VolleyError volleyError) {
-
 
                             startPostponedEnterTransition();
                         }
