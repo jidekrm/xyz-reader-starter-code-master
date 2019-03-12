@@ -44,7 +44,7 @@
                 android:layout_width="match_parent"
                 android:layout_gravity="bottom"
                 android:layout_height="?actionBarSize"
-                app:layout_collapseMode="none" />
+                app:layout_collapseMode="none">
 
             <ImageView
                 android:layout_width="wrap_content"
@@ -52,6 +52,8 @@
                 app:layout_collapseMode="pin"
                 android:src="@drawable/logo"
                 android:contentDescription="@string/app_name" />
+
+            </android.support.v7.widget.Toolbar>
 
         </android.support.design.widget.CollapsingToolbarLayout>
     </android.support.design.widget.AppBarLayout>

@@ -1,6 +1,8 @@
 package com.example.xyzreader.ui;
 
+import android.app.ActivityOptions;
 import android.app.LoaderManager;
+import android.app.SharedElementCallback;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -8,7 +10,6 @@ import android.content.IntentFilter;
 import android.content.Loader;
 import android.database.Cursor;
 import android.os.Bundle;
-import android.support.design.widget.CollapsingToolbarLayout;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.RecyclerView;
@@ -19,6 +20,7 @@ import android.text.format.DateUtils;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewTreeObserver;
 import android.widget.TextView;
 
 import com.example.xyzreader.R;
@@ -30,6 +32,8 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.GregorianCalendar;
+import java.util.List;
+import java.util.Map;
 
 /**
  * An activity representing a list of Articles. This activity has different presentations for
@@ -51,6 +55,54 @@ public class ArticleListActivity extends AppCompatActivity implements
     // Most time functions can only handle 1902 - 2037
     private GregorianCalendar START_OF_EPOCH = new GregorianCalendar(2, 1, 1);
 
+
+    private Bundle mTmpReenterState;
+    static final String EXTRA_STARTING_ALBUM_POSITION = "extra_starting_item_position";
+    static final String EXTRA_STARTING_ALBUM_POSITION2 = "extra_starting_item_position2";
+    static final String EXTRA_CURRENT_ALBUM_POSITION = "extra_current_item_position";
+    String ALBUM_NAMES = "";
+
+    private final SharedElementCallback mCallback = new SharedElementCallback() {
+        @Override
+        public void onMapSharedElements(List<String> names, Map<String, View> sharedElements) {
+            if (mTmpReenterState != null) {
+                int startingPosition = mTmpReenterState.getInt(EXTRA_STARTING_ALBUM_POSITION);
+                int currentPosition = mTmpReenterState.getInt(EXTRA_CURRENT_ALBUM_POSITION);
+
+                if (startingPosition != currentPosition) {
+//                    String newTransitionName = ALBUM_NAMES[currentPosition];
+
+                    String newTransitionName = getALBUM_NAMES();
+                    Log.i("ABCDhh2", "" + newTransitionName);
+                    View newSharedElement = mRecyclerView.findViewWithTag(newTransitionName);
+                    if (newSharedElement != null) {
+                        names.clear();
+                        names.add(newTransitionName);
+                        sharedElements.clear();
+                        sharedElements.put(newTransitionName, newSharedElement);
+                    }
+                }
+                mTmpReenterState = null;
+
+            } else {
+                // If mTmpReenterState is null, then the activity is exiting.
+                View navigationBar = findViewById(android.R.id.navigationBarBackground);
+                View statusBar = findViewById(android.R.id.statusBarBackground);
+                if (navigationBar != null) {
+                    names.add(navigationBar.getTransitionName());
+                    sharedElements.put(navigationBar.getTransitionName(), navigationBar);
+                }
+                if (statusBar != null) {
+                    names.add(statusBar.getTransitionName());
+                    sharedElements.put(statusBar.getTransitionName(), statusBar);
+                }
+
+            }
+
+//            super.onMapSharedElements(names, sharedElements);
+        }
+    };
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -60,6 +112,8 @@ public class ArticleListActivity extends AppCompatActivity implements
 //        ((CollapsingToolbarLayout) findViewById(R.id.collapsing_toolbar_layout)).setTitle("XYZ Reader");
 //Removed
 //        final View toolbarContainerView = findViewById(R.id.toolbar_container);
+
+        setExitSharedElementCallback(mCallback);
 
         mSwipeRefreshLayout = findViewById(R.id.swipe_refresh_layout);
 
@@ -127,6 +181,7 @@ public class ArticleListActivity extends AppCompatActivity implements
 
     private class Adapter extends RecyclerView.Adapter<ViewHolder> {
         private Cursor mCursor;
+//       private int mAlbumPosition ;
 
         public Adapter(Cursor cursor) {
             mCursor = cursor;
@@ -145,8 +200,31 @@ public class ArticleListActivity extends AppCompatActivity implements
             view.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-                    startActivity(new Intent(Intent.ACTION_VIEW,
-                            ItemsContract.Items.buildItemUri(getItemId(vh.getAdapterPosition()))));
+
+                    setALBUM_NAMES(vh.thumbnailView.getTransitionName());
+                    Log.i("ABCDhh", "" + getALBUM_NAMES());
+
+//                    Log.i("ABCD", "" + mCursor.getString(ArticleLoader.Query.TITLE));
+
+
+                    Intent intent = new Intent(Intent.ACTION_VIEW,
+                            ItemsContract.Items.buildItemUri(getItemId(vh.getAdapterPosition())));
+                    intent.putExtra(EXTRA_STARTING_ALBUM_POSITION, vh.mAlbumPosition);
+                    intent.putExtra(EXTRA_STARTING_ALBUM_POSITION2, vh.thumbnailView.getTransitionName());
+                    Log.i("ABCDEF", "" + vh.mAlbumPosition);
+                    startActivity(intent,
+                            ActivityOptions.makeSceneTransitionAnimation(ArticleListActivity.this,
+                                    vh.thumbnailView,
+                                    vh.thumbnailView.getTransitionName()).toBundle()
+                    );
+
+//                    startActivity(new Intent(Intent.ACTION_VIEW,
+//                            ItemsContract.Items.buildItemUri(getItemId(vh.getAdapterPosition())))
+////                            , ActivityOptions.makeSceneTransitionAnimation(ArticleListActivity.this
+////                                    ,vh.thumbnailView
+////                                    ,vh.thumbnailView.getTransitionName()
+////                                    ).toBundle()
+//                    );
                 }
             });
             return vh;
@@ -167,6 +245,9 @@ public class ArticleListActivity extends AppCompatActivity implements
         public void onBindViewHolder(ViewHolder holder, int position) {
             mCursor.moveToPosition(position);
             holder.titleView.setText(mCursor.getString(ArticleLoader.Query.TITLE));
+
+//            setALBUM_NAMES(mCursor.getString(ArticleLoader.Query.TITLE));
+
             Date publishedDate = parsePublishedDate();
             if (!publishedDate.before(START_OF_EPOCH.getTime())) {
 
@@ -187,6 +268,13 @@ public class ArticleListActivity extends AppCompatActivity implements
                     mCursor.getString(ArticleLoader.Query.THUMB_URL),
                     ImageLoaderHelper.getInstance(ArticleListActivity.this).getImageLoader());
             holder.thumbnailView.setAspectRatio(mCursor.getFloat(ArticleLoader.Query.ASPECT_RATIO));
+
+
+            holder.thumbnailView.setTransitionName(mCursor.getString(ArticleLoader.Query.TITLE));
+            holder.thumbnailView.setTag(mCursor.getString(ArticleLoader.Query.TITLE));
+            holder.mAlbumPosition = position;
+//            Log.i("ABCDEM", "" + mCursor.getString(ArticleLoader.Query.TITLE));
+//            Log.i("ABCDE", "" + holder.mAlbumPosition);
         }
 
         @Override
@@ -199,6 +287,7 @@ public class ArticleListActivity extends AppCompatActivity implements
         public DynamicHeightNetworkImageView thumbnailView;
         public TextView titleView;
         public TextView subtitleView;
+        private int mAlbumPosition;
 
         public ViewHolder(View view) {
             super(view);
@@ -206,5 +295,37 @@ public class ArticleListActivity extends AppCompatActivity implements
             titleView = view.findViewById(R.id.article_title);
             subtitleView = view.findViewById(R.id.article_subtitle);
         }
+    }
+
+
+    @Override
+    public void onActivityReenter(int resultCode, Intent data) {
+        super.onActivityReenter(resultCode, data);
+        mTmpReenterState = new Bundle(data.getExtras());
+        int startingPosition = mTmpReenterState.getInt(EXTRA_STARTING_ALBUM_POSITION);
+        int currentPosition = mTmpReenterState.getInt(EXTRA_CURRENT_ALBUM_POSITION);
+        if (startingPosition != currentPosition) {
+            mRecyclerView.scrollToPosition(currentPosition);
+        }
+
+        postponeEnterTransition();
+        mRecyclerView.getViewTreeObserver().addOnPreDrawListener(new ViewTreeObserver.OnPreDrawListener() {
+            @Override
+            public boolean onPreDraw() {
+                mRecyclerView.getViewTreeObserver().removeOnPreDrawListener(this);
+
+                mRecyclerView.requestLayout();
+                startPostponedEnterTransition();
+                return true;
+            }
+        });
+    }
+
+    public String getALBUM_NAMES() {
+        return ALBUM_NAMES;
+    }
+
+    public void setALBUM_NAMES(String ALBUM_NAMES) {
+        this.ALBUM_NAMES = ALBUM_NAMES;
     }
 }

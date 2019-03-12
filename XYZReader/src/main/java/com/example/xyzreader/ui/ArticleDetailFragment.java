@@ -11,6 +11,7 @@ import android.graphics.Rect;
 import android.graphics.Typeface;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.v4.app.ShareCompat;
 import android.support.v7.graphics.Palette;
 import android.text.Html;
@@ -20,6 +21,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewTreeObserver;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -65,6 +67,43 @@ public class ArticleDetailFragment extends Fragment implements
     // Most time functions can only handle 1902 - 2037
     private GregorianCalendar START_OF_EPOCH = new GregorianCalendar(2, 1, 1);
 
+
+    private boolean mIsTransitioning;
+    private int mStartingPosition;
+    private int mAlbumPosition;
+
+    private static final String ARG_ALBUM_IMAGE_POSITION = "arg_album_image_position";
+    private static final String ARG_STARTING_ALBUM_IMAGE_POSITION = "arg_starting_album_image_position";
+//    private long mBackgroundImageFadeMillis;
+
+//    private final Callback mImageCallback = new Callback() {
+//        @Override
+//        public void onSuccess() {
+//            startPostponedEnterTransition();
+//        }
+//
+//        @Override
+//        public void onError() {
+//            startPostponedEnterTransition();
+//        }
+//    };
+
+
+    public void startPostponedEnterTransition() {
+        Log.i("KKKKC", "" + mAlbumPosition);
+        Log.i("KKKKC2", "" + mStartingPosition);
+        if (mAlbumPosition == mStartingPosition) {
+            mPhotoView.getViewTreeObserver().addOnPreDrawListener(new ViewTreeObserver.OnPreDrawListener() {
+                @Override
+                public boolean onPreDraw() {
+                    mPhotoView.getViewTreeObserver().removeOnPreDrawListener(this);
+                    getActivity().startPostponedEnterTransition();
+                    return true;
+                }
+            });
+        }
+    }
+
     /**
      * Mandatory empty constructor for the fragment manager to instantiate the
      * fragment (e.g. upon screen orientation changes).
@@ -72,8 +111,12 @@ public class ArticleDetailFragment extends Fragment implements
     public ArticleDetailFragment() {
     }
 
-    public static ArticleDetailFragment newInstance(long itemId) {
+    public static ArticleDetailFragment newInstance(long itemId, int position, int startingPosition) {
         Bundle arguments = new Bundle();
+        arguments.putInt(ARG_ALBUM_IMAGE_POSITION, position);
+        arguments.putInt(ARG_STARTING_ALBUM_IMAGE_POSITION, startingPosition);
+
+
         arguments.putLong(ARG_ITEM_ID, itemId);
         ArticleDetailFragment fragment = new ArticleDetailFragment();
         fragment.setArguments(arguments);
@@ -97,6 +140,13 @@ public class ArticleDetailFragment extends Fragment implements
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+
+        mStartingPosition = getArguments().getInt(ARG_STARTING_ALBUM_IMAGE_POSITION);
+        mAlbumPosition = getArguments().getInt(ARG_ALBUM_IMAGE_POSITION);
+        mIsTransitioning = savedInstanceState == null && mStartingPosition == mAlbumPosition;
+//        mBackgroundImageFadeMillis = 1000;
+
 
         if (getArguments().containsKey(ARG_ITEM_ID)) {
             mItemId = getArguments().getLong(ARG_ITEM_ID);
@@ -149,6 +199,11 @@ public class ArticleDetailFragment extends Fragment implements
         mPhotoView = mRootView.findViewById(R.id.photo);
         mPhotoContainerView = mRootView.findViewById(R.id.photo_container);
 
+//        String albumName = mCursor.getString(ArticleLoader.Query.TITLE);
+
+//        Log.i("KKK2", ArticleDetailActivity.getMama());
+        String albumName = ArticleDetailActivity.getMama();
+
         mStatusBarColorDrawable = new ColorDrawable(0);
 
         mRootView.findViewById(R.id.share_fab).setOnClickListener(new View.OnClickListener() {
@@ -160,6 +215,21 @@ public class ArticleDetailFragment extends Fragment implements
                         .getIntent(), getString(R.string.action_share)));
             }
         });
+
+
+        mPhotoView.setTransitionName(albumName);
+//        if (mIsTransitioning) {
+////            albumImageRequest.noFade();
+////            backgroundImageRequest.noFade();
+////            backgroundImage.setAlpha(0f);
+//            getActivity().getWindow().getSharedElementEnterTransition().addListener(new TransitionListenerAdapter() {
+//                @Override
+//                public void onTransitionEnd(Transition transition) {
+//                    backgroundImage.animate().setDuration(mBackgroundImageFadeMillis).alpha(1f);
+//                }
+//            });
+//        }
+
 
         bindViews();
         updateStatusBar();
@@ -210,6 +280,7 @@ public class ArticleDetailFragment extends Fragment implements
             mRootView.setVisibility(View.VISIBLE);
             mRootView.animate().alpha(1);
             titleView.setText(mCursor.getString(ArticleLoader.Query.TITLE));
+
             Date publishedDate = parsePublishedDate();
             if (!publishedDate.before(START_OF_EPOCH.getTime())) {
                 bylineView.setText(Html.fromHtml(
@@ -231,10 +302,12 @@ public class ArticleDetailFragment extends Fragment implements
             }
             bodyView.setText(Html.fromHtml(mCursor.getString(ArticleLoader.Query.BODY)
                     .replaceAll("(\r\n|\n)", "<br />")));
+            Log.i("KKK2", mCursor.getString(ArticleLoader.Query.PHOTO_URL));
             ImageLoaderHelper.getInstance(getActivity()).getImageLoader()
                     .get(mCursor.getString(ArticleLoader.Query.PHOTO_URL), new ImageLoader.ImageListener() {
                         @Override
                         public void onResponse(ImageLoader.ImageContainer imageContainer, boolean b) {
+
                             Bitmap bitmap = imageContainer.getBitmap();
                             if (bitmap != null) {
                                 Palette p = Palette.generate(bitmap, 12);
@@ -243,12 +316,20 @@ public class ArticleDetailFragment extends Fragment implements
                                 mRootView.findViewById(R.id.meta_bar)
                                         .setBackgroundColor(mMutedColor);
                                 updateStatusBar();
+
+
+                                startPostponedEnterTransition();
                             }
+
+//                            startPostponedEnterTransition();
                         }
+
 
                         @Override
                         public void onErrorResponse(VolleyError volleyError) {
 
+
+                            startPostponedEnterTransition();
                         }
                     });
         } else {
@@ -298,5 +379,18 @@ public class ArticleDetailFragment extends Fragment implements
         return mIsCard
                 ? (int) mPhotoContainerView.getTranslationY() + mPhotoView.getHeight() - mScrollY
                 : mPhotoView.getHeight() - mScrollY;
+    }
+
+    ImageView getAlbumImage() {
+        if (isViewInBounds(getActivity().getWindow().getDecorView(), mPhotoView)) {
+            return mPhotoView;
+        }
+        return null;
+    }
+
+    private static boolean isViewInBounds(@NonNull View container, @NonNull View view) {
+        Rect containerBounds = new Rect();
+        container.getHitRect(containerBounds);
+        return view.getLocalVisibleRect(containerBounds);
     }
 }
