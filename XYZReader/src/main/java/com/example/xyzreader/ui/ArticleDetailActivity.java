@@ -14,7 +14,6 @@ import android.support.annotation.NonNull;
 import android.support.v13.app.FragmentStatePagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.util.TypedValue;
 import android.view.View;
 import android.view.ViewGroup;
@@ -30,7 +29,7 @@ import java.util.Map;
 
 import static com.example.xyzreader.ui.ArticleListActivity.EXTRA_CURRENT_ALBUM_POSITION;
 import static com.example.xyzreader.ui.ArticleListActivity.EXTRA_STARTING_ALBUM_POSITION;
-import static com.example.xyzreader.ui.ArticleListActivity.EXTRA_STARTING_ALBUM_POSITION2;
+//import static com.example.xyzreader.ui.ArticleListActivity.EXTRA_STARTING_ALBUM_POSITION2;
 
 /**
  * An activity representing a single Article detail screen, letting you swipe between articles.
@@ -38,44 +37,30 @@ import static com.example.xyzreader.ui.ArticleListActivity.EXTRA_STARTING_ALBUM_
 public class ArticleDetailActivity extends AppCompatActivity
         implements LoaderManager.LoaderCallbacks<Cursor> {
 
+    private static final String STATE_CURRENT_PAGE_POSITION = "state_current_page_position";
+    //    public static String mama;
     private Cursor mCursor;
     private long mStartId;
-
     private long mSelectedItemId;
     private int mSelectedItemUpButtonFloor = Integer.MAX_VALUE;
     private int mTopInset;
-
     private ViewPager mPager;
     private MyPagerAdapter mPagerAdapter;
     private View mUpButtonContainer;
     private View mUpButton;
-
-
     private boolean mIsReturning;
     private int mCurrentPosition;
     private int mStartingPosition;
     private ArticleDetailFragment mCurrentDetailsFragment;
-    public static String mama;
-
-    private static final String STATE_CURRENT_PAGE_POSITION = "state_current_page_position";
-
     private final SharedElementCallback mCallback = new SharedElementCallback() {
         @Override
         public void onMapSharedElements(List<String> names, Map<String, View> sharedElements) {
             if (mIsReturning) {
                 ImageView sharedElement = mCurrentDetailsFragment.getAlbumImage();
-//                Log.i("PartXX", "" + mCurrentDetailsFragment.getTag());
-//                Log.i("PartXX2", "" + sharedElement.getTransitionName());
                 if (sharedElement == null) {
-                    // If shared element is null, then it has been scrolled off screen and
-                    // no longer visible. In this case we cancel the shared element transition by
-                    // removing the shared element from the shared elements map.
                     names.clear();
                     sharedElements.clear();
                 } else if (mStartingPosition != mCurrentPosition) {
-                    // If the user has swiped to a different ViewPager page, then we need to
-                    // remove the old shared element and replace it with the new shared element
-                    // that should be transitioned instead.
                     names.clear();
                     names.add(sharedElement.getTransitionName());
                     sharedElements.clear();
@@ -84,14 +69,20 @@ public class ArticleDetailActivity extends AppCompatActivity
             }
         }
     };
-
+//
+//    public static String getMama() {
+//        return mama;
+//    }
+//
+//    public static void setMama(String mama) {
+//        ArticleDetailActivity.mama = mama;
+//    }
 
     @Override
     protected void onSaveInstanceState(@NonNull Bundle outState) {
         super.onSaveInstanceState(outState);
         outState.putInt(STATE_CURRENT_PAGE_POSITION, mCurrentPosition);
     }
-
 
     @Override
     public void finishAfterTransition() {
@@ -102,7 +93,6 @@ public class ArticleDetailActivity extends AppCompatActivity
         setResult(RESULT_OK, data);
         super.finishAfterTransition();
     }
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -118,9 +108,7 @@ public class ArticleDetailActivity extends AppCompatActivity
         setEnterSharedElementCallback(mCallback);
 
         mStartingPosition = getIntent().getIntExtra(EXTRA_STARTING_ALBUM_POSITION, 0);
-        mama = getIntent().getStringExtra(EXTRA_STARTING_ALBUM_POSITION2);
-        Log.i("ABCD", "" + mama);
-
+//        mama = getIntent().getStringExtra(EXTRA_STARTING_ALBUM_POSITION2);
         if (savedInstanceState == null) {
             mCurrentPosition = mStartingPosition;
         } else {
@@ -135,12 +123,10 @@ public class ArticleDetailActivity extends AppCompatActivity
         mPager = findViewById(R.id.pager);
         mPager.setAdapter(mPagerAdapter);
         mPager.setCurrentItem(mCurrentPosition);
+
         mPager.setPageMargin((int) TypedValue
                 .applyDimension(TypedValue.COMPLEX_UNIT_DIP, 1, getResources().getDisplayMetrics()));
         mPager.setPageMarginDrawable(new ColorDrawable(0x22000000));
-//        mPager.setOffscreenPageLimit(0);
-
-//        mPager.setOnPageChangeListener(new ViewPager.SimpleOnPageChangeListener() {
         mPager.addOnPageChangeListener(new ViewPager.SimpleOnPageChangeListener() {
             @Override
             public void onPageScrollStateChanged(int state) {
@@ -152,14 +138,15 @@ public class ArticleDetailActivity extends AppCompatActivity
 
             @Override
             public void onPageSelected(int position) {
-                mCurrentPosition = position;
+
                 if (mCursor != null) {
                     mCursor.moveToPosition(position);
-
+                    mCurrentPosition = position;
                 }
+
                 mSelectedItemId = mCursor.getLong(ArticleLoader.Query._ID);
                 updateUpButtonPosition();
-//                Log.i("ABCDhh2", "" + position);
+
             }
 
 
@@ -172,6 +159,8 @@ public class ArticleDetailActivity extends AppCompatActivity
             @Override
             public void onClick(View view) {
                 onSupportNavigateUp();
+
+
             }
         });
 
@@ -194,6 +183,8 @@ public class ArticleDetailActivity extends AppCompatActivity
                 mSelectedItemId = mStartId;
             }
         }
+
+
     }
 
     @Override
@@ -205,6 +196,7 @@ public class ArticleDetailActivity extends AppCompatActivity
     public void onLoadFinished(Loader<Cursor> cursorLoader, Cursor cursor) {
         mCursor = cursor;
         mPagerAdapter.notifyDataSetChanged();
+
 
         // Select the start ID
         if (mStartId > 0) {
@@ -267,13 +259,5 @@ public class ArticleDetailActivity extends AppCompatActivity
         public int getCount() {
             return (mCursor != null) ? mCursor.getCount() : 0;
         }
-    }
-
-    public static String getMama() {
-        return mama;
-    }
-
-    public static void setMama(String mama) {
-        ArticleDetailActivity.mama = mama;
     }
 }

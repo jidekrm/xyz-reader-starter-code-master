@@ -45,7 +45,7 @@ public class ArticleListActivity extends AppCompatActivity implements
         LoaderManager.LoaderCallbacks<Cursor> {
 
     static final String EXTRA_STARTING_ALBUM_POSITION = "extra_starting_item_position";
-    static final String EXTRA_STARTING_ALBUM_POSITION2 = "extra_starting_item_name";
+    //    static final String EXTRA_STARTING_ALBUM_POSITION2 = "extra_starting_item_name";
     static final String EXTRA_CURRENT_ALBUM_POSITION = "extra_current_item_position";
     private static final String TAG = ArticleListActivity.class.toString();
     public static String ALBUM_NAMES = "";
@@ -67,8 +67,8 @@ public class ArticleListActivity extends AppCompatActivity implements
                 int startingPosition = mTmpReenterState.getInt(EXTRA_STARTING_ALBUM_POSITION);
                 int currentPosition = mTmpReenterState.getInt(EXTRA_CURRENT_ALBUM_POSITION);
                 if (startingPosition != currentPosition) {
-
-                    String newTransitionName = getAlbumNames().substring(0, getAlbumNames().length() - 1) + currentPosition;
+//
+                    String newTransitionName = getAlbumNames();
                     View newSharedElement = mRecyclerView.findViewWithTag(newTransitionName);
                     if (newSharedElement != null) {
                         names.clear();
@@ -109,6 +109,14 @@ public class ArticleListActivity extends AppCompatActivity implements
         }
     };
 
+    public static String getAlbumNames() {
+        return ALBUM_NAMES;
+    }
+
+    public static void setAlbumNames(String albumNames) {
+        ALBUM_NAMES = albumNames;
+    }
+
     @Override
     protected void onResume() {
         super.onResume();
@@ -121,8 +129,6 @@ public class ArticleListActivity extends AppCompatActivity implements
         setContentView(R.layout.activity_article_list);
 
         mToolbar = findViewById(R.id.toolbar);
-
-//        final View toolbarContainerView = findViewById(R.id.toolbar_container);
 
         setExitSharedElementCallback(mCallback);
 
@@ -203,14 +209,6 @@ public class ArticleListActivity extends AppCompatActivity implements
         });
     }
 
-    public static String getAlbumNames() {
-        return ALBUM_NAMES;
-    }
-
-    public static void setAlbumNames(String albumNames) {
-        ALBUM_NAMES = albumNames;
-    }
-
     public static class ViewHolder extends RecyclerView.ViewHolder {
         private DynamicHeightNetworkImageView thumbnailView;
         private TextView titleView;
@@ -242,7 +240,7 @@ public class ArticleListActivity extends AppCompatActivity implements
         public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
             View view = getLayoutInflater().inflate(R.layout.list_item_article, parent, false);
             final ViewHolder vh = new ViewHolder(view);
-//            Log.i("Partvv3", "" + "Hello");
+
             view.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
@@ -251,17 +249,12 @@ public class ArticleListActivity extends AppCompatActivity implements
 
                         mIsDetailsActivityStarted = true;
                         setAlbumNames(vh.thumbnailView.getTransitionName());
-//                        Log.i("Part2", "" + getItemId(vh.getAdapterPosition()));
-//                        Log.i("Part4", "" + getALBUM_NAMES());
-
-//                    Log.i("ABCD", "" + mCursor.getString(ArticleLoader.Query.TITLE));
-
 
                         Intent intent = new Intent(Intent.ACTION_VIEW,
                                 ItemsContract.Items.buildItemUri(getItemId(vh.getAdapterPosition())));
 
                         intent.putExtra(EXTRA_STARTING_ALBUM_POSITION, vh.mAlbumPosition);
-                        intent.putExtra(EXTRA_STARTING_ALBUM_POSITION2, vh.thumbnailView.getTransitionName().substring(0, vh.thumbnailView.getTransitionName().length() - 1));
+//                        intent.putExtra(EXTRA_STARTING_ALBUM_POSITION2, vh.thumbnailView.getTransitionName().substring(0, vh.thumbnailView.getTransitionName().length() - 1));
                         startActivity(intent,
                                 ActivityOptions.makeSceneTransitionAnimation(ArticleListActivity.this
                                         ,
@@ -320,8 +313,6 @@ public class ArticleListActivity extends AppCompatActivity implements
             holder.thumbnailView.setTransitionName(mCursor.getString(ArticleLoader.Query.TITLE) + position);
             holder.thumbnailView.setTag(mCursor.getString(ArticleLoader.Query.TITLE) + position);
             holder.mAlbumPosition = position;
-//            Log.i("ABCDEM", "" + mCursor.getString(ArticleLoader.Query.TITLE) + position);
-//            Log.i("Partvv", "" + "Hello");
         }
 
         @Override
