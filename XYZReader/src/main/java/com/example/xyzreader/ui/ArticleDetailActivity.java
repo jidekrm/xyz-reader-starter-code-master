@@ -64,6 +64,8 @@ public class ArticleDetailActivity extends AppCompatActivity
         public void onMapSharedElements(List<String> names, Map<String, View> sharedElements) {
             if (mIsReturning) {
                 ImageView sharedElement = mCurrentDetailsFragment.getAlbumImage();
+//                Log.i("PartXX", "" + mCurrentDetailsFragment.getTag());
+//                Log.i("PartXX2", "" + sharedElement.getTransitionName());
                 if (sharedElement == null) {
                     // If shared element is null, then it has been scrolled off screen and
                     // no longer visible. In this case we cancel the shared element transition by
@@ -117,7 +119,7 @@ public class ArticleDetailActivity extends AppCompatActivity
 
         mStartingPosition = getIntent().getIntExtra(EXTRA_STARTING_ALBUM_POSITION, 0);
         mama = getIntent().getStringExtra(EXTRA_STARTING_ALBUM_POSITION2);
-
+        Log.i("ABCD", "" + mama);
 
         if (savedInstanceState == null) {
             mCurrentPosition = mStartingPosition;
@@ -127,6 +129,7 @@ public class ArticleDetailActivity extends AppCompatActivity
 
 
         getLoaderManager().initLoader(0, null, this);
+
 
         mPagerAdapter = new MyPagerAdapter(getFragmentManager());
         mPager = findViewById(R.id.pager);
@@ -149,13 +152,14 @@ public class ArticleDetailActivity extends AppCompatActivity
 
             @Override
             public void onPageSelected(int position) {
+                mCurrentPosition = position;
                 if (mCursor != null) {
                     mCursor.moveToPosition(position);
-                    mCurrentPosition = position;
+
                 }
                 mSelectedItemId = mCursor.getLong(ArticleLoader.Query._ID);
                 updateUpButtonPosition();
-                Log.i("ABCDhh2", "" + position);
+//                Log.i("ABCDhh2", "" + position);
             }
 
 

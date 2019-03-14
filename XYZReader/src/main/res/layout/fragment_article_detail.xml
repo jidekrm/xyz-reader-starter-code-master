@@ -17,6 +17,7 @@
                 android:id="@+id/photo_container"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:transitionGroup="true"
                 android:background="@color/photo_placeholder">
                 <!--suppress AndroidLintContentDescription -->
 
@@ -42,11 +43,14 @@
                 android:background="@drawable/scrim" />
 
             <com.example.xyzreader.ui.MaxWidthLinearLayout
+
+                android:id="@+id/takers"
                 android:orientation="vertical"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_horizontal"
                 android:maxWidth="@dimen/detail_card_max_width"
+                android:transitionGroup="true"
                 android:background="#fff"
                 android:elevation="2dp"
                 android:layout_marginTop="@dimen/detail_card_top_margin">

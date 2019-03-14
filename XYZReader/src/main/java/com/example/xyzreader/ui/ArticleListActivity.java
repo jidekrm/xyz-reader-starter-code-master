@@ -44,34 +44,31 @@ import java.util.Map;
 public class ArticleListActivity extends AppCompatActivity implements
         LoaderManager.LoaderCallbacks<Cursor> {
 
+    static final String EXTRA_STARTING_ALBUM_POSITION = "extra_starting_item_position";
+    static final String EXTRA_STARTING_ALBUM_POSITION2 = "extra_starting_item_name";
+    static final String EXTRA_CURRENT_ALBUM_POSITION = "extra_current_item_position";
     private static final String TAG = ArticleListActivity.class.toString();
+    public static String ALBUM_NAMES = "";
     private Toolbar mToolbar;
     private SwipeRefreshLayout mSwipeRefreshLayout;
     private RecyclerView mRecyclerView;
-
     private SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.sss");
     // Use default locale format
     private SimpleDateFormat outputFormat = new SimpleDateFormat();
     // Most time functions can only handle 1902 - 2037
     private GregorianCalendar START_OF_EPOCH = new GregorianCalendar(2, 1, 1);
-
-
     private Bundle mTmpReenterState;
-    static final String EXTRA_STARTING_ALBUM_POSITION = "extra_starting_item_position";
-    static final String EXTRA_STARTING_ALBUM_POSITION2 = "extra_starting_item_name";
-    static final String EXTRA_CURRENT_ALBUM_POSITION = "extra_current_item_position";
-    String ALBUM_NAMES = "";
-    private boolean mIsDetailsActivityStarted;
 
     private final SharedElementCallback mCallback = new SharedElementCallback() {
         @Override
         public void onMapSharedElements(List<String> names, Map<String, View> sharedElements) {
             if (mTmpReenterState != null) {
+
                 int startingPosition = mTmpReenterState.getInt(EXTRA_STARTING_ALBUM_POSITION);
                 int currentPosition = mTmpReenterState.getInt(EXTRA_CURRENT_ALBUM_POSITION);
                 if (startingPosition != currentPosition) {
 
-                    String newTransitionName = getALBUM_NAMES();
+                    String newTransitionName = getAlbumNames().substring(0, getAlbumNames().length() - 1) + currentPosition;
                     View newSharedElement = mRecyclerView.findViewWithTag(newTransitionName);
                     if (newSharedElement != null) {
                         names.clear();
@@ -98,11 +95,19 @@ public class ArticleListActivity extends AppCompatActivity implements
                 }
 
             }
-
-//            super.onMapSharedElements(names, sharedElements);
         }
     };
-
+    private boolean mIsDetailsActivityStarted;
+    private boolean mIsRefreshing = false;
+    private BroadcastReceiver mRefreshingReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if (UpdaterService.BROADCAST_ACTION_STATE_CHANGE.equals(intent.getAction())) {
+                mIsRefreshing = intent.getBooleanExtra(UpdaterService.EXTRA_REFRESHING, false);
+                updateRefreshingUI();
+            }
+        }
+    };
 
     @Override
     protected void onResume() {
@@ -110,15 +115,13 @@ public class ArticleListActivity extends AppCompatActivity implements
         mIsDetailsActivityStarted = false;
     }
 
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_article_list);
 
-//        mToolbar = (Toolbar) findViewById(R.id.toolbar);
-//        ((CollapsingToolbarLayout) findViewById(R.id.collapsing_toolbar_layout)).setTitle("XYZ Reader");
-//Removed
+        mToolbar = findViewById(R.id.toolbar);
+
 //        final View toolbarContainerView = findViewById(R.id.toolbar_container);
 
         setExitSharedElementCallback(mCallback);
@@ -131,10 +134,13 @@ public class ArticleListActivity extends AppCompatActivity implements
         if (savedInstanceState == null) {
             refresh();
         }
+
+
     }
 
     private void refresh() {
         startService(new Intent(this, UpdaterService.class));
+
     }
 
     @Override
@@ -149,18 +155,6 @@ public class ArticleListActivity extends AppCompatActivity implements
         super.onStop();
         unregisterReceiver(mRefreshingReceiver);
     }
-
-    private boolean mIsRefreshing = false;
-
-    private BroadcastReceiver mRefreshingReceiver = new BroadcastReceiver() {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            if (UpdaterService.BROADCAST_ACTION_STATE_CHANGE.equals(intent.getAction())) {
-                mIsRefreshing = intent.getBooleanExtra(UpdaterService.EXTRA_REFRESHING, false);
-                updateRefreshingUI();
-            }
-        }
-    };
 
     private void updateRefreshingUI() {
         mSwipeRefreshLayout.setRefreshing(mIsRefreshing);
@@ -187,9 +181,52 @@ public class ArticleListActivity extends AppCompatActivity implements
         mRecyclerView.setAdapter(null);
     }
 
+    @Override
+    public void onActivityReenter(int resultCode, Intent data) {
+        super.onActivityReenter(resultCode, data);
+        mTmpReenterState = new Bundle(data.getExtras());
+        int startingPosition = mTmpReenterState.getInt(EXTRA_STARTING_ALBUM_POSITION);
+        int currentPosition = mTmpReenterState.getInt(EXTRA_CURRENT_ALBUM_POSITION);
+        if (startingPosition != currentPosition) {
+            mRecyclerView.scrollToPosition(currentPosition);
+        }
+
+        postponeEnterTransition();
+        mRecyclerView.getViewTreeObserver().addOnPreDrawListener(new ViewTreeObserver.OnPreDrawListener() {
+            @Override
+            public boolean onPreDraw() {
+                mRecyclerView.getViewTreeObserver().removeOnPreDrawListener(this);
+                mRecyclerView.requestLayout();
+                startPostponedEnterTransition();
+                return true;
+            }
+        });
+    }
+
+    public static String getAlbumNames() {
+        return ALBUM_NAMES;
+    }
+
+    public static void setAlbumNames(String albumNames) {
+        ALBUM_NAMES = albumNames;
+    }
+
+    public static class ViewHolder extends RecyclerView.ViewHolder {
+        private DynamicHeightNetworkImageView thumbnailView;
+        private TextView titleView;
+        private TextView subtitleView;
+        private int mAlbumPosition;
+
+        public ViewHolder(View view) {
+            super(view);
+            thumbnailView = view.findViewById(R.id.thumbnail);
+            titleView = view.findViewById(R.id.article_title);
+            subtitleView = view.findViewById(R.id.article_subtitle);
+        }
+    }
+
     private class Adapter extends RecyclerView.Adapter<ViewHolder> {
         private Cursor mCursor;
-//       private int mAlbumPosition ;
 
         public Adapter(Cursor cursor) {
             mCursor = cursor;
@@ -205,6 +242,7 @@ public class ArticleListActivity extends AppCompatActivity implements
         public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
             View view = getLayoutInflater().inflate(R.layout.list_item_article, parent, false);
             final ViewHolder vh = new ViewHolder(view);
+//            Log.i("Partvv3", "" + "Hello");
             view.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
@@ -212,18 +250,18 @@ public class ArticleListActivity extends AppCompatActivity implements
                     if (!mIsDetailsActivityStarted) {
 
                         mIsDetailsActivityStarted = true;
-                        setALBUM_NAMES(vh.thumbnailView.getTransitionName());
-//                        Log.i("ABCDhh", "" + getALBUM_NAMES());
+                        setAlbumNames(vh.thumbnailView.getTransitionName());
+//                        Log.i("Part2", "" + getItemId(vh.getAdapterPosition()));
+//                        Log.i("Part4", "" + getALBUM_NAMES());
 
 //                    Log.i("ABCD", "" + mCursor.getString(ArticleLoader.Query.TITLE));
 
 
                         Intent intent = new Intent(Intent.ACTION_VIEW,
                                 ItemsContract.Items.buildItemUri(getItemId(vh.getAdapterPosition())));
+
                         intent.putExtra(EXTRA_STARTING_ALBUM_POSITION, vh.mAlbumPosition);
-                        intent.putExtra(EXTRA_STARTING_ALBUM_POSITION2, vh.thumbnailView.getTransitionName());
-//                        Log.i("ABCDEF", "" + vh.mAlbumPosition);
-//                        Log.i("ABCDEF", "" + vh.thumbnailView.getTransitionName());
+                        intent.putExtra(EXTRA_STARTING_ALBUM_POSITION2, vh.thumbnailView.getTransitionName().substring(0, vh.thumbnailView.getTransitionName().length() - 1));
                         startActivity(intent,
                                 ActivityOptions.makeSceneTransitionAnimation(ArticleListActivity.this
                                         ,
@@ -231,6 +269,7 @@ public class ArticleListActivity extends AppCompatActivity implements
                                         vh.thumbnailView.getTransitionName()
                                 ).toBundle()
                         );
+
 
                     }
 
@@ -278,61 +317,16 @@ public class ArticleListActivity extends AppCompatActivity implements
             holder.thumbnailView.setAspectRatio(mCursor.getFloat(ArticleLoader.Query.ASPECT_RATIO));
 
 
-            holder.thumbnailView.setTransitionName(mCursor.getString(ArticleLoader.Query.TITLE));
-            holder.thumbnailView.setTag(mCursor.getString(ArticleLoader.Query.TITLE));
+            holder.thumbnailView.setTransitionName(mCursor.getString(ArticleLoader.Query.TITLE) + position);
+            holder.thumbnailView.setTag(mCursor.getString(ArticleLoader.Query.TITLE) + position);
             holder.mAlbumPosition = position;
-//            Log.i("ABCDEM", "" + mCursor.getString(ArticleLoader.Query.TITLE));
-//            Log.i("ABCDE", "" + holder.mAlbumPosition);
+//            Log.i("ABCDEM", "" + mCursor.getString(ArticleLoader.Query.TITLE) + position);
+//            Log.i("Partvv", "" + "Hello");
         }
 
         @Override
         public int getItemCount() {
             return mCursor.getCount();
         }
-    }
-
-    public static class ViewHolder extends RecyclerView.ViewHolder {
-        private DynamicHeightNetworkImageView thumbnailView;
-        private TextView titleView;
-        private TextView subtitleView;
-        private int mAlbumPosition;
-
-        public ViewHolder(View view) {
-            super(view);
-            thumbnailView = view.findViewById(R.id.thumbnail);
-            titleView = view.findViewById(R.id.article_title);
-            subtitleView = view.findViewById(R.id.article_subtitle);
-        }
-    }
-
-
-    @Override
-    public void onActivityReenter(int resultCode, Intent data) {
-        super.onActivityReenter(resultCode, data);
-        mTmpReenterState = new Bundle(data.getExtras());
-        int startingPosition = mTmpReenterState.getInt(EXTRA_STARTING_ALBUM_POSITION);
-        int currentPosition = mTmpReenterState.getInt(EXTRA_CURRENT_ALBUM_POSITION);
-        if (startingPosition != currentPosition) {
-            mRecyclerView.scrollToPosition(currentPosition);
-        }
-
-        postponeEnterTransition();
-        mRecyclerView.getViewTreeObserver().addOnPreDrawListener(new ViewTreeObserver.OnPreDrawListener() {
-            @Override
-            public boolean onPreDraw() {
-                mRecyclerView.getViewTreeObserver().removeOnPreDrawListener(this);
-                mRecyclerView.requestLayout();
-                startPostponedEnterTransition();
-                return true;
-            }
-        });
-    }
-
-    public String getALBUM_NAMES() {
-        return ALBUM_NAMES;
-    }
-
-    public void setALBUM_NAMES(String ALBUM_NAMES) {
-        this.ALBUM_NAMES = ALBUM_NAMES;
     }
 }

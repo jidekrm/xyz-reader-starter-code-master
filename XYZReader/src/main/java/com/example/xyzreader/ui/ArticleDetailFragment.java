@@ -68,7 +68,7 @@ public class ArticleDetailFragment extends Fragment implements
     private GregorianCalendar START_OF_EPOCH = new GregorianCalendar(2, 1, 1);
 
 
-    private boolean mIsTransitioning;
+    //    private boolean mIsTransitioning;
     private int mStartingPosition;
     private int mAlbumPosition;
 
@@ -77,8 +77,6 @@ public class ArticleDetailFragment extends Fragment implements
 
 
     public void startPostponedEnterTransition() {
-        Log.i("KKKmAlbumPosition", "" + mAlbumPosition);
-        Log.i("KKKmStartingPosition", "" + mStartingPosition);
         if (mAlbumPosition == mStartingPosition) {
             mPhotoView.getViewTreeObserver().addOnPreDrawListener(new ViewTreeObserver.OnPreDrawListener() {
                 @Override
@@ -102,8 +100,6 @@ public class ArticleDetailFragment extends Fragment implements
         Bundle arguments = new Bundle();
         arguments.putInt(ARG_ALBUM_IMAGE_POSITION, position);
         arguments.putInt(ARG_STARTING_ALBUM_IMAGE_POSITION, startingPosition);
-
-
         arguments.putLong(ARG_ITEM_ID, itemId);
         ArticleDetailFragment fragment = new ArticleDetailFragment();
         fragment.setArguments(arguments);
@@ -128,12 +124,10 @@ public class ArticleDetailFragment extends Fragment implements
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-
         mStartingPosition = getArguments().getInt(ARG_STARTING_ALBUM_IMAGE_POSITION);
         mAlbumPosition = getArguments().getInt(ARG_ALBUM_IMAGE_POSITION);
-        mIsTransitioning = savedInstanceState == null && mStartingPosition == mAlbumPosition;
+//        mIsTransitioning = savedInstanceState == null && mStartingPosition == mAlbumPosition;
 //        mBackgroundImageFadeMillis = 1000;
-
 
         if (getArguments().containsKey(ARG_ITEM_ID)) {
             mItemId = getArguments().getLong(ARG_ITEM_ID);
@@ -187,10 +181,8 @@ public class ArticleDetailFragment extends Fragment implements
         mPhotoContainerView = mRootView.findViewById(R.id.photo_container);
 
 //        String albumName = mCursor.getString(ArticleLoader.Query.TITLE);
-
 //        Log.i("KKK2", ArticleDetailActivity.getMama());
-        String albumName = ArticleDetailActivity.getMama();
-        Log.i("ABCDhh3", "" + albumName);
+
 
         mStatusBarColorDrawable = new ColorDrawable(0);
 
@@ -205,10 +197,14 @@ public class ArticleDetailFragment extends Fragment implements
         });
 
 
+        String albumName = ArticleDetailActivity.getMama() + mAlbumPosition;
         mPhotoView.setTransitionName(albumName);
-        Log.i("KKKXXX", "" + albumName);
+//        Log.i("Partake2", "" + mAlbumPosition);
+        Log.i("Partake4", "" + albumName);
 
         bindViews();
+
+
         updateStatusBar();
         return mRootView;
     }
@@ -280,6 +276,9 @@ public class ArticleDetailFragment extends Fragment implements
             bodyView.setText(Html.fromHtml(mCursor.getString(ArticleLoader.Query.BODY)
                     .replaceAll("(\r\n|\n)", "<br />")));
             Log.i("KKK2", mCursor.getString(ArticleLoader.Query.PHOTO_URL));
+
+            ArticleDetailActivity.setMama(mCursor.getString(ArticleLoader.Query.TITLE));
+
             ImageLoaderHelper.getInstance(getActivity()).getImageLoader()
                     .get(mCursor.getString(ArticleLoader.Query.PHOTO_URL), new ImageLoader.ImageListener() {
                         @Override
@@ -295,10 +294,10 @@ public class ArticleDetailFragment extends Fragment implements
                                 updateStatusBar();
 
 
-                                startPostponedEnterTransition();
+//                                startPostponedEnterTransition();
                             }
 
-//                            startPostponedEnterTransition();
+                            startPostponedEnterTransition();
                         }
 
 
@@ -323,6 +322,7 @@ public class ArticleDetailFragment extends Fragment implements
 
     @Override
     public void onLoadFinished(Loader<Cursor> cursorLoader, Cursor cursor) {
+
         if (!isAdded()) {
             if (cursor != null) {
                 cursor.close();
@@ -336,8 +336,11 @@ public class ArticleDetailFragment extends Fragment implements
             mCursor.close();
             mCursor = null;
         }
-
+//        ArticleListActivity.setAlbumNames(mCursor.getString(ArticleLoader.Query.TITLE) + mAlbumPosition);
         bindViews();
+
+
+        Log.i("Partake3", "" + "HELLOOO");
     }
 
     @Override
@@ -364,7 +367,7 @@ public class ArticleDetailFragment extends Fragment implements
         return null;
     }
 
-    private static boolean isViewInBounds(@NonNull View container, @NonNull View view) {
+    private boolean isViewInBounds(@NonNull View container, @NonNull View view) {
         Rect containerBounds = new Rect();
         container.getHitRect(containerBounds);
         return view.getLocalVisibleRect(containerBounds);
