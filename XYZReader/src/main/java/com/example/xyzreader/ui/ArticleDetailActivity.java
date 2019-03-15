@@ -69,14 +69,7 @@ public class ArticleDetailActivity extends AppCompatActivity
             }
         }
     };
-//
-//    public static String getMama() {
-//        return mama;
-//    }
-//
-//    public static void setMama(String mama) {
-//        ArticleDetailActivity.mama = mama;
-//    }
+
 
     @Override
     protected void onSaveInstanceState(@NonNull Bundle outState) {
@@ -158,8 +151,8 @@ public class ArticleDetailActivity extends AppCompatActivity
         mUpButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                onSupportNavigateUp();
-
+//                onSupportNavigateUp();
+                supportFinishAfterTransition();
 
             }
         });
