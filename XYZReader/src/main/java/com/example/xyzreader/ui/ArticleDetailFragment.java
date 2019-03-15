@@ -170,11 +170,6 @@ public class ArticleDetailFragment extends Fragment implements
 
         mPhotoView = mRootView.findViewById(R.id.photo);
         mPhotoContainerView = mRootView.findViewById(R.id.photo_container);
-
-//        String albumName = mCursor.getString(ArticleLoader.Query.TITLE);
-//        Log.i("KKK2", ArticleDetailActivity.getMama());
-
-
         mStatusBarColorDrawable = new ColorDrawable(0);
 
         mRootView.findViewById(R.id.share_fab).setOnClickListener(new View.OnClickListener() {
@@ -227,7 +222,6 @@ public class ArticleDetailFragment extends Fragment implements
         TextView bylineView = mRootView.findViewById(R.id.article_byline);
         bylineView.setMovementMethod(new LinkMovementMethod());
         TextView bodyView = mRootView.findViewById(R.id.article_body);
-
 
         bodyView.setTypeface(Typeface.createFromAsset(getResources().getAssets(), "Rosario-Regular.ttf"));
 

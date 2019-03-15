@@ -80,7 +80,6 @@ public class ArticleListActivity extends AppCompatActivity implements
                 mTmpReenterState = null;
 
             } else {
-
                 // If mTmpReenterState is null, then the activity is exiting.
                 View navigationBar = findViewById(android.R.id.navigationBarBackground);
                 View statusBar = findViewById(android.R.id.statusBarBackground);
@@ -91,9 +90,7 @@ public class ArticleListActivity extends AppCompatActivity implements
                 if (statusBar != null) {
                     names.add(statusBar.getTransitionName());
                     sharedElements.put(statusBar.getTransitionName(), statusBar);
-
                 }
-
             }
         }
     };
@@ -107,6 +104,8 @@ public class ArticleListActivity extends AppCompatActivity implements
                 updateRefreshingUI();
             }
         }
+
+
     };
 
     public static String getAlbumNames() {
@@ -127,21 +126,15 @@ public class ArticleListActivity extends AppCompatActivity implements
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_article_list);
-
         mToolbar = findViewById(R.id.toolbar);
-
         setExitSharedElementCallback(mCallback);
-
         mSwipeRefreshLayout = findViewById(R.id.swipe_refresh_layout);
-
         mRecyclerView = findViewById(R.id.recycler_view);
         getLoaderManager().initLoader(0, null, this);
 
         if (savedInstanceState == null) {
             refresh();
         }
-
-
     }
 
     private void refresh() {
@@ -164,6 +157,8 @@ public class ArticleListActivity extends AppCompatActivity implements
 
     private void updateRefreshingUI() {
         mSwipeRefreshLayout.setRefreshing(mIsRefreshing);
+        mSwipeRefreshLayout.setEnabled(false);
+
     }
 
     @Override
@@ -254,7 +249,6 @@ public class ArticleListActivity extends AppCompatActivity implements
                                 ItemsContract.Items.buildItemUri(getItemId(vh.getAdapterPosition())));
 
                         intent.putExtra(EXTRA_STARTING_ALBUM_POSITION, vh.mAlbumPosition);
-//                        intent.putExtra(EXTRA_STARTING_ALBUM_POSITION2, vh.thumbnailView.getTransitionName().substring(0, vh.thumbnailView.getTransitionName().length() - 1));
                         startActivity(intent,
                                 ActivityOptions.makeSceneTransitionAnimation(ArticleListActivity.this
                                         ,
@@ -262,11 +256,7 @@ public class ArticleListActivity extends AppCompatActivity implements
                                         vh.thumbnailView.getTransitionName()
                                 ).toBundle()
                         );
-
-
                     }
-
-
                 }
             });
             return vh;

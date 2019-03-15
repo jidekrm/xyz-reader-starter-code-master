@@ -29,7 +29,6 @@ import java.util.Map;
 
 import static com.example.xyzreader.ui.ArticleListActivity.EXTRA_CURRENT_ALBUM_POSITION;
 import static com.example.xyzreader.ui.ArticleListActivity.EXTRA_STARTING_ALBUM_POSITION;
-//import static com.example.xyzreader.ui.ArticleListActivity.EXTRA_STARTING_ALBUM_POSITION2;
 
 /**
  * An activity representing a single Article detail screen, letting you swipe between articles.
@@ -101,7 +100,6 @@ public class ArticleDetailActivity extends AppCompatActivity
         setEnterSharedElementCallback(mCallback);
 
         mStartingPosition = getIntent().getIntExtra(EXTRA_STARTING_ALBUM_POSITION, 0);
-//        mama = getIntent().getStringExtra(EXTRA_STARTING_ALBUM_POSITION2);
         if (savedInstanceState == null) {
             mCurrentPosition = mStartingPosition;
         } else {
@@ -110,7 +108,6 @@ public class ArticleDetailActivity extends AppCompatActivity
 
 
         getLoaderManager().initLoader(0, null, this);
-
 
         mPagerAdapter = new MyPagerAdapter(getFragmentManager());
         mPager = findViewById(R.id.pager);
