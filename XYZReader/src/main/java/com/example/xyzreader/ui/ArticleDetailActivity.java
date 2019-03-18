@@ -37,7 +37,6 @@ public class ArticleDetailActivity extends AppCompatActivity
         implements LoaderManager.LoaderCallbacks<Cursor> {
 
     private static final String STATE_CURRENT_PAGE_POSITION = "state_current_page_position";
-    //    public static String mama;
     private Cursor mCursor;
     private long mStartId;
     private long mSelectedItemId;
