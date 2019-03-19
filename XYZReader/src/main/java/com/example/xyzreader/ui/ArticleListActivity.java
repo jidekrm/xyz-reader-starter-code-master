@@ -14,7 +14,6 @@ import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.StaggeredGridLayoutManager;
-import android.support.v7.widget.Toolbar;
 import android.text.Html;
 import android.text.format.DateUtils;
 import android.util.Log;
@@ -49,16 +48,6 @@ public class ArticleListActivity extends AppCompatActivity implements
     static final String EXTRA_CURRENT_ALBUM_POSITION = "extra_current_item_position";
     private static final String TAG = ArticleListActivity.class.toString();
     public static String ALBUM_NAMES = "";
-    private Toolbar mToolbar;
-    private SwipeRefreshLayout mSwipeRefreshLayout;
-    private RecyclerView mRecyclerView;
-    private SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.sss");
-    // Use default locale format
-    private SimpleDateFormat outputFormat = new SimpleDateFormat();
-    // Most time functions can only handle 1902 - 2037
-    private GregorianCalendar START_OF_EPOCH = new GregorianCalendar(2, 1, 1);
-    private Bundle mTmpReenterState;
-
     private final SharedElementCallback mCallback = new SharedElementCallback() {
         @Override
         public void onMapSharedElements(List<String> names, Map<String, View> sharedElements) {
@@ -67,7 +56,7 @@ public class ArticleListActivity extends AppCompatActivity implements
                 int startingPosition = mTmpReenterState.getInt(EXTRA_STARTING_ALBUM_POSITION);
                 int currentPosition = mTmpReenterState.getInt(EXTRA_CURRENT_ALBUM_POSITION);
                 if (startingPosition != currentPosition) {
-//
+
                     String newTransitionName = getAlbumNames();
                     View newSharedElement = mRecyclerView.findViewWithTag(newTransitionName);
                     if (newSharedElement != null) {
@@ -94,6 +83,15 @@ public class ArticleListActivity extends AppCompatActivity implements
             }
         }
     };
+    private RecyclerView mRecyclerView;
+    private SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.sss");
+    // Use default locale format
+    private SimpleDateFormat outputFormat = new SimpleDateFormat();
+    // Most time functions can only handle 1902 - 2037
+    private GregorianCalendar START_OF_EPOCH = new GregorianCalendar(2, 1, 1);
+    private Bundle mTmpReenterState;
+    //    private Toolbar mToolbar;
+    private SwipeRefreshLayout mSwipeRefreshLayout;
     private boolean mIsDetailsActivityStarted;
     private boolean mIsRefreshing = false;
     private BroadcastReceiver mRefreshingReceiver = new BroadcastReceiver() {
@@ -126,7 +124,6 @@ public class ArticleListActivity extends AppCompatActivity implements
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_article_list);
-        mToolbar = findViewById(R.id.toolbar);
         setExitSharedElementCallback(mCallback);
         mSwipeRefreshLayout = findViewById(R.id.swipe_refresh_layout);
         mRecyclerView = findViewById(R.id.recycler_view);
